@@ -32,7 +32,7 @@ def obtener_ticket_acceso(servicio, entorno, cert_file, key_file):
     try:
         tra = wsaa.CreateTRA(servicio)
         cms = wsaa.SignTRA(tra, cert_file, key_file)
-        wsaa.Conectar(url_wsaa_url=url_wsaa)
+        wsaa.Conectar(url_wsaa)
         wsaa.LoginCMS(cms)
         return wsaa.Token, wsaa.Sign
     except Exception as e:
