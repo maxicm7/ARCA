@@ -9,34 +9,21 @@ st.set_page_config(page_title="Facturador Monotributo ARCA", layout="wide", page
 # --- FUNCIONES DE SEGURIDAD ---
 # Streamlit Cloud no permite subir archivos .key al repositorio por seguridad.
 # Los leemos de los "Secrets" de Streamlit y los guardamos temporalmente en el servidor.
+# --- FUNCIONES DE SEGURIDAD ---
 def preparar_certificados():
     try:
-        cert_content = st.secrets["AFIP_CERT"]
-        key_content = st.secrets["AFIP_KEY"]
+        # Extraemos y forzamos el formato de Linux para evitar errores de firma
+        cert_content = st.secrets["AFIP_CERT"].replace('\r\n', '\n').strip() + '\n'
+        key_content = st.secrets["AFIP_KEY"].replace('\r\n', '\n').strip() + '\n'
         
-        with open("temp_cert.crt", "w") as f:
+        with open("temp_cert.crt", "w", encoding='utf-8') as f:
             f.write(cert_content)
-        with open("temp_key.key", "w") as f:
+        with open("temp_key.key", "w", encoding='utf-8') as f:
             f.write(key_content)
             
         return "temp_cert.crt", "temp_key.key"
     except Exception as e:
         st.error("⚠️ No se encontraron los certificados en los Secrets de Streamlit.")
-        return None, None
-
-# --- AUTENTICACIÓN ---
-def obtener_ticket_acceso(servicio, entorno, cert_file, key_file):
-    wsaa = WSAA()
-    url_wsaa = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms?wsdl" if entorno == "Homologación" else "https://wsaa.afip.gov.ar/ws/services/LoginCms?wsdl"
-    
-    try:
-        tra = wsaa.CreateTRA(servicio)
-        cms = wsaa.SignTRA(tra, cert_file, key_file)
-        wsaa.Conectar(url_wsaa)
-        wsaa.LoginCMS(cms)
-        return wsaa.Token, wsaa.Sign
-    except Exception as e:
-        st.error(f"Error de conexión con ARCA: {e}")
         return None, None
 
 # --- INTERFAZ DE USUARIO ---
