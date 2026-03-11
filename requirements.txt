@@ -1,4 +1,4 @@
 streamlit
-pyafipws
+git+https://github.com/reingart/pyafipws.git
 pyopenssl
 httplib2
