@@ -7,8 +7,6 @@ from pyafipws.ws_sr_padron import WSSrPadronA5
 st.set_page_config(page_title="Facturador Monotributo ARCA", layout="wide", page_icon="🧾")
 
 # --- FUNCIONES DE SEGURIDAD ---
-# Streamlit Cloud no permite subir archivos .key al repositorio por seguridad.
-# Los leemos de los "Secrets" de Streamlit y los guardamos temporalmente en el servidor.
 # --- FUNCIONES DE SEGURIDAD ---
 def preparar_certificados():
     try:
@@ -26,6 +24,22 @@ def preparar_certificados():
         st.error("⚠️ No se encontraron los certificados en los Secrets de Streamlit.")
         return None, None
 
+# --- AUTENTICACIÓN ---
+def obtener_ticket_acceso(servicio, entorno, cert_file, key_file):
+    wsaa = WSAA()
+    url_wsaa = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms?wsdl" if entorno == "Homologación" else "https://wsaa.afip.gov.ar/ws/services/LoginCms?wsdl"
+    
+    try:
+        tra = wsaa.CreateTRA(servicio)
+        cms = wsaa.SignTRA(tra, cert_file, key_file)
+        wsaa.Conectar(url_wsaa)
+        wsaa.LoginCMS(cms)
+        return wsaa.Token, wsaa.Sign
+    except Exception as e:
+        st.error(f"Error de conexión con ARCA: {e}")
+        return None, None
+
+# --- INTERFAZ DE USUARIO ---
 # --- INTERFAZ DE USUARIO ---
 st.title("🧾 Facturador Monotributo (ARCA / AFIP)")
 
